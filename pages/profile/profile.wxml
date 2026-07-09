@@ -4,28 +4,18 @@
   <view class="card">
     <view class="card-title">👤 我的性别</view>
     <view class="gender-options">
-      <view
-        class="gender-card {{settings.gender === 'male' ? 'active male' : ''}}"
-        bindtap="selectGender"
-        data-gender="male"
-      >
+      <view class="gender-card {{settings.gender === 'male' ? 'active male' : ''}}" bindtap="selectGender" data-gender="male">
         <text class="gender-icon">🙋‍♂️</text>
         <text class="gender-text">男生</text>
         <text class="gender-sub">戒撸 + 健身</text>
       </view>
-      <view
-        class="gender-card {{settings.gender === 'female' ? 'active female' : ''}}"
-        bindtap="selectGender"
-        data-gender="female"
-      >
+      <view class="gender-card {{settings.gender === 'female' ? 'active female' : ''}}" bindtap="selectGender" data-gender="female">
         <text class="gender-icon">🙋‍♀️</text>
         <text class="gender-text">女生</text>
         <text class="gender-sub">戒自慰 + 健身</text>
       </view>
     </view>
-    <view class="gender-saved" wx:if="{{genderSaved}}">
-      <text class="text-green">✅ 已设置</text>
-    </view>
+    <view class="gender-saved" wx:if="{{genderSaved}}"><text class="text-green">✅ 已设置</text></view>
   </view>
 
   <!-- 戒色设置 -->
@@ -40,43 +30,26 @@
     </view>
   </view>
 
-  <!-- 自定义模块管理 -->
+  <!-- 模块管理 -->
   <view class="card">
     <view class="card-title flex-between">
       <text>📦 我的模块</text>
       <text class="add-btn" bindtap="showAddModule">+ 添加</text>
     </view>
-
-    <!-- 默认模块（不可删） -->
-    <view class="module-row" wx:for="{{defaultModules}}" wx:key="id">
+    <view class="module-row" wx:for="{{trackers}}" wx:key="id">
       <text class="module-row-icon">{{item.icon}}</text>
       <text class="module-row-name">{{item.name}}</text>
-      <text class="module-row-tag">默认</text>
+      <text class="module-row-tag" wx:if="{{!item.deletable}}">默认</text>
+      <text class="module-row-del" wx:if="{{item.deletable}}" bindtap="deleteTracker" data-id="{{item.id}}">删除</text>
     </view>
-
-    <!-- 自定义模块 -->
-    <view class="module-row" wx:for="{{customModules}}" wx:key="id">
-      <text class="module-row-icon">{{item.icon}}</text>
-      <text class="module-row-name">{{item.name}}</text>
-      <text class="module-row-del" bindtap="deleteModule" data-id="{{item.id}}">删除</text>
-    </view>
-
-    <view class="empty-hint" wx:if="{{customModules.length === 0}}">
-      还没有自定义模块，点击上方「+ 添加」
-    </view>
+    <view class="empty-hint" wx:if="{{trackers.length === 0}}">还没有模块，点击「+ 添加」</view>
   </view>
 
   <!-- 数据管理 -->
   <view class="card">
     <view class="card-title">⚙️ 数据管理</view>
-    <view class="setting-row" bindtap="exportData">
-      <text>📤 导出数据</text>
-      <text class="arrow">›</text>
-    </view>
-    <view class="setting-row danger" bindtap="clearData">
-      <text>🗑 清除所有数据</text>
-      <text class="arrow">›</text>
-    </view>
+    <view class="setting-row" bindtap="exportData"><text>📤 导出数据</text><text class="arrow">›</text></view>
+    <view class="setting-row danger" bindtap="clearData"><text>🗑 清除所有数据</text><text class="arrow">›</text></view>
   </view>
 
   <!-- 关于 -->
@@ -96,31 +69,16 @@
 <view class="modal-mask" wx:if="{{showAdd}}">
   <view class="modal-box">
     <view class="modal-title">添加自定义模块</view>
-
     <view class="form-group">
       <view class="form-label">模块名称</view>
-      <input
-        class="form-input"
-        placeholder="例如：阅读、早睡、学英语"
-        value="{{newModuleName}}"
-        bindinput="onNameInput"
-        maxlength="10"
-      />
+      <input class="form-input" placeholder="例如：阅读、早睡、学英语" value="{{newModuleName}}" bindinput="onNameInput" maxlength="10" />
     </view>
-
     <view class="form-group">
       <view class="form-label">选择图标</view>
       <view class="icon-grid">
-        <view
-          class="icon-item {{newModuleIcon === item ? 'active' : ''}}"
-          wx:for="{{moduleIcons}}"
-          wx:key="*this"
-          bindtap="selectIcon"
-          data-icon="{{item}}"
-        >{{item}}</view>
+        <view class="icon-item {{newModuleIcon === item ? 'active' : ''}}" wx:for="{{moduleIcons}}" wx:key="*this" bindtap="selectIcon" data-icon="{{item}}">{{item}}</view>
       </view>
     </view>
-
     <view class="modal-btns">
       <button class="btn btn-sm" bindtap="hideAddModule">取消</button>
       <button class="btn btn-sm btn-primary" bindtap="saveModule">确认添加</button>

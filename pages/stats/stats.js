@@ -1,17 +1,17 @@
 // 统计页
 const storage = require('../../utils/storage')
-const { defaultConfig, getToday } = require('../../utils/constants')
+const { defaultConfig, getToday, calcVitality } = require('../../utils/constants')
 
 Page({
   data: {
     abstinenceLabel: '戒色',
-    currentStreak: 0,
-    currentVitality: 0,
+    abstinenceDays: 0,
+    abstinenceVitality: 0,
     longestStreak: 0,
-    totalResets: 0,
+    totalBreaks: 0,
     monthFitDays: 0,
     monthFitMinutes: 0,
-    customStats: [],
+    trackers: [],
     chartData: []
   },
 
@@ -21,172 +21,118 @@ Page({
 
     const gender = settings.gender
     const config = defaultConfig[gender] || defaultConfig.male
-    const abstinence = storage.getAbstinence()
-    const currentStreak = storage.getAbstinenceDays()
-    const currentVitality = storage.getVitality()
+    const trackers = storage.getTrackers()
+
+    // 戒色追踪器
+    const abs = trackers.find(t => t.id === 'abstinence')
+    const abstinenceDays = abs ? storage.getTrackerDays('abstinence') : 0
+    const abstinenceVitality = abs ? storage.getTrackerVitality('abstinence') : 0
 
     // 本月统计
-    const today = getToday()
-    const monthStr = today.substring(0, 7) // '2026-07'
+    const monthStr = getToday().substring(0, 7)
     const monthStats = storage.getMonthStats(monthStr)
 
-    // 自定义模块完成率
-    const daysInMonth = new Date(parseInt(today.substring(0, 4)), parseInt(today.substring(5, 7)), 0).getDate()
-    const dayOfMonth = parseInt(today.substring(8, 10))
-    const daysPassed = Math.min(dayOfMonth, daysInMonth)
-    const customStats = monthStats.customStats.map(s => ({
-      ...s,
-      percent: daysPassed > 0 ? Math.round((s.count / daysPassed) * 100) : 0
+    // 其他追踪器统计
+    const trackerStats = trackers.filter(t => t.id !== 'abstinence').map(t => ({
+      name: t.name,
+      icon: t.icon,
+      vitality: storage.getTrackerVitality(t.id),
+      days: storage.getTrackerDays(t.id),
+      longestStreak: t.longestStreak
     }))
 
     // 图表数据
-    const history = storage.getAbstinenceHistory()
-    const chartData = history.slice(-14) // 最近14条
+    const history = storage.getTrackerHistory('abstinence')
+    const chartData = history.slice(-14)
 
     this.setData({
       abstinenceLabel: config.abstinenceLabel,
-      currentStreak,
-      currentVitality,
-      longestStreak: abstinence.longestStreak,
-      totalResets: abstinence.resetHistory.length,
+      abstinenceDays,
+      abstinenceVitality,
+      longestStreak: abs ? abs.longestStreak : 0,
+      totalBreaks: abs ? abs.breakHistory.length : 0,
       monthFitDays: monthStats.fitDays,
       monthFitMinutes: monthStats.fitMinutes,
-      customStats,
+      trackers: trackerStats,
       chartData
     })
 
-    // 绘制图表
-    if (chartData.length > 0) {
-      this.drawChart(chartData)
-    }
+    if (chartData.length > 0) this.drawChart(chartData)
   },
 
   drawChart(data) {
     const query = wx.createSelectorQuery()
-    query.select('#abstinenceChart')
-      .fields({ node: true, size: true })
-      .exec((res) => {
-        if (!res[0]) return
+    query.select('#abstinenceChart').fields({ node: true, size: true }).exec((res) => {
+      if (!res[0]) return
+      const canvas = res[0].node
+      const ctx = canvas.getContext('2d')
+      const dpr = wx.getWindowInfo().pixelRatio
+      const width = res[0].width, height = res[0].height
+      canvas.width = width * dpr; canvas.height = height * dpr
+      ctx.scale(dpr, dpr)
+      ctx.clearRect(0, 0, width, height)
+      if (data.length < 2) return
 
-        const canvas = res[0].node
-        const ctx = canvas.getContext('2d')
-        const dpr = wx.getWindowInfo().pixelRatio
+      const maxDays = Math.max(...data.map(d => d.days), 5)
+      const pad = { top: 24, right: 24, bottom: 48, left: 48 }
+      const cw = width - pad.left - pad.right, ch = height - pad.top - pad.bottom
+      const stepX = cw / (data.length - 1)
+      const gridLines = 5
 
-        const width = res[0].width
-        const height = res[0].height
+      // 网格
+      ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1
+      for (let i = 0; i <= gridLines; i++) {
+        const y = pad.top + (ch / gridLines) * i
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke()
+      }
 
-        canvas.width = width * dpr
-        canvas.height = height * dpr
-        ctx.scale(dpr, dpr)
+      // 渐变填充
+      const gradient = ctx.createLinearGradient(0, pad.top, 0, height - pad.bottom)
+      gradient.addColorStop(0, 'rgba(102, 126, 234, 0.3)')
+      gradient.addColorStop(1, 'rgba(102, 126, 234, 0.02)')
+      ctx.beginPath()
+      ctx.moveTo(pad.left, height - pad.bottom)
+      data.forEach((d, i) => {
+        const x = pad.left + stepX * i
+        const y = pad.top + ch - (d.days / maxDays) * ch
+        ctx.lineTo(x, y)
+      })
+      ctx.lineTo(pad.left + stepX * (data.length - 1), height - pad.bottom)
+      ctx.closePath(); ctx.fillStyle = gradient; ctx.fill()
 
-        // 清除画布
-        ctx.clearRect(0, 0, width, height)
+      // 折线
+      ctx.beginPath(); ctx.strokeStyle = '#667eea'; ctx.lineWidth = 3; ctx.lineJoin = 'round'
+      data.forEach((d, i) => {
+        const x = pad.left + stepX * i, y = pad.top + ch - (d.days / maxDays) * ch
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+      }); ctx.stroke()
 
-        if (data.length < 2) return
-
-        // 计算边界
-        const maxDays = Math.max(...data.map(d => d.days), 5)
-        const padding = { top: 24, right: 24, bottom: 48, left: 48 }
-        const chartW = width - padding.left - padding.right
-        const chartH = height - padding.top - padding.bottom
-
-        // 画网格线
-        ctx.strokeStyle = '#f0f0f0'
-        ctx.lineWidth = 1
-        const gridLines = 5
-        for (let i = 0; i <= gridLines; i++) {
-          const y = padding.top + (chartH / gridLines) * i
-          ctx.beginPath()
-          ctx.moveTo(padding.left, y)
-          ctx.lineTo(width - padding.right, y)
-          ctx.stroke()
-
-          // Y轴标签
-          const val = Math.round(maxDays - (maxDays / gridLines) * i)
-          ctx.fillStyle = '#999'
-          ctx.font = '20rpx sans-serif'  // WeChat uses rpx, but canvas uses px
-          // We'll use a simplified approach
-        }
-
-        // 画折线
-        const stepX = chartW / (data.length - 1)
-
-        // 渐变填充
-        const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom)
-        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.3)')
-        gradient.addColorStop(1, 'rgba(102, 126, 234, 0.02)')
-
-        // 填充区域
+      // 数据点
+      data.forEach((d, i) => {
+        const x = pad.left + stepX * i, y = pad.top + ch - (d.days / maxDays) * ch
         ctx.beginPath()
-        ctx.moveTo(padding.left, height - padding.bottom)
-        data.forEach((d, i) => {
-          const x = padding.left + stepX * i
-          const y = padding.top + chartH - (d.days / maxDays) * chartH
-          ctx.lineTo(x, y)
-        })
-        ctx.lineTo(padding.left + stepX * (data.length - 1), height - padding.bottom)
-        ctx.closePath()
-        ctx.fillStyle = gradient
-        ctx.fill()
-
-        // 折线
-        ctx.beginPath()
-        ctx.strokeStyle = '#667eea'
-        ctx.lineWidth = 3
-        ctx.lineJoin = 'round'
-        ctx.lineCap = 'round'
-        data.forEach((d, i) => {
-          const x = padding.left + stepX * i
-          const y = padding.top + chartH - (d.days / maxDays) * chartH
-          if (i === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
-        })
-        ctx.stroke()
-
-        // 数据点
-        data.forEach((d, i) => {
-          const x = padding.left + stepX * i
-          const y = padding.top + chartH - (d.days / maxDays) * chartH
-
-          // 当前点在最后才高亮
-          if (i === data.length - 1) {
-            ctx.beginPath()
-            ctx.arc(x, y, 8, 0, Math.PI * 2)
-            ctx.fillStyle = '#667eea'
-            ctx.fill()
-            ctx.beginPath()
-            ctx.arc(x, y, 12, 0, Math.PI * 2)
-            ctx.fillStyle = 'rgba(102, 126, 234, 0.2)'
-            ctx.fill()
-          } else {
-            ctx.beginPath()
-            ctx.arc(x, y, 5, 0, Math.PI * 2)
-            ctx.fillStyle = '#667eea'
-            ctx.fill()
-          }
-        })
-
-        // 底部日期标签
-        ctx.fillStyle = '#999'
-        ctx.font = '11px sans-serif'
-        ctx.textAlign = 'center'
-        data.forEach((d, i) => {
-          if (i % Math.ceil(data.length / 6) === 0 || i === data.length - 1) {
-            const x = padding.left + stepX * i
-            const dateStr = d.date.substring(5) // '07-10'
-            ctx.fillText(dateStr, x, height - 8)
-          }
-        })
-
-        // Y轴标签
-        ctx.fillStyle = '#999'
-        ctx.font = '10px sans-serif'
-        ctx.textAlign = 'right'
-        for (let i = 0; i <= gridLines; i++) {
-          const y = padding.top + (chartH / gridLines) * i
-          const val = Math.round(maxDays - (maxDays / gridLines) * i)
-          ctx.fillText(val + '', padding.left - 8, y + 4)
+        ctx.arc(x, y, i === data.length - 1 ? 8 : 5, 0, Math.PI * 2)
+        ctx.fillStyle = '#667eea'; ctx.fill()
+        if (i === data.length - 1) {
+          ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2)
+          ctx.fillStyle = 'rgba(102, 126, 234, 0.2)'; ctx.fill()
         }
       })
+
+      // 底部标签
+      ctx.fillStyle = '#999'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
+      data.forEach((d, i) => {
+        if (i % Math.ceil(data.length / 6) === 0 || i === data.length - 1) {
+          ctx.fillText(d.date.substring(5), pad.left + stepX * i, height - 8)
+        }
+      })
+
+      // Y轴标签
+      ctx.textAlign = 'right'; ctx.font = '10px sans-serif'
+      for (let i = 0; i <= gridLines; i++) {
+        const val = Math.round(maxDays - (maxDays / gridLines) * i)
+        ctx.fillText(val + '', pad.left - 8, pad.top + (ch / gridLines) * i + 4)
+      }
+    })
   }
 })

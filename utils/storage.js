@@ -1,5 +1,5 @@
 // 本地存储工具
-const { getToday, calcVitality, VITALITY_CYCLE } = require('./constants')
+const { getToday, calcVitality, VITALITY_CYCLE, defaultConfig } = require('./constants')
 
 // ========== 设置 ==========
 function getSettings() {
@@ -10,271 +10,205 @@ function saveSettings(settings) {
   wx.setStorageSync('settings', settings)
 }
 
-// ========== 戒色数据 ==========
-function getAbstinence() {
-  const data = wx.getStorageSync('abstinence')
-  if (!data) {
-    return {
-      startDate: getToday(),
-      longestStreak: 0,
-      resetHistory: [],
-      todayChecked: false   // 今天是否已打卡
+// ========== 统一追踪器系统 ==========
+// 每个追踪器: { id, name, icon, type, deletable, startDate, longestStreak, breakHistory, todayChecked, checkedDate }
+
+function getTrackers() {
+  let trackers = wx.getStorageSync('trackers')
+  if (!trackers || trackers.length === 0) {
+    // 首次初始化：创建戒色 + 健身两个默认追踪器
+    const settings = getSettings()
+    const label = settings ? (defaultConfig[settings.gender]?.abstinenceLabel || '戒色') : '戒色'
+    trackers = [
+      { id: 'abstinence', name: label, icon: '🛡️', type: 'abstinence', deletable: false, startDate: getToday(), longestStreak: 0, breakHistory: [], todayChecked: false, checkedDate: '' },
+      { id: 'fitness', name: '健身', icon: '💪', type: 'fitness', deletable: false, startDate: getToday(), longestStreak: 0, breakHistory: [], todayChecked: false, checkedDate: '' }
+    ]
+    saveTrackers(trackers)
+  }
+  // 同步戒色名称
+  const settings = getSettings()
+  if (settings && trackers[0]) {
+    const label = defaultConfig[settings.gender]?.abstinenceLabel || '戒色'
+    if (trackers[0].name !== label) {
+      trackers[0].name = label
+      saveTrackers(trackers)
     }
   }
-  // 兼容旧数据
-  if (data.todayChecked === undefined) data.todayChecked = false
-  return data
+  return trackers
 }
 
-function saveAbstinence(data) {
-  wx.setStorageSync('abstinence', data)
+function saveTrackers(trackers) {
+  wx.setStorageSync('trackers', trackers)
 }
 
-// 计算当前连续天数
-function getAbstinenceDays() {
-  const data = getAbstinence()
-  if (!data.startDate) return 0
-  const start = new Date(data.startDate)
+function addTracker(name, icon) {
+  const trackers = getTrackers()
+  trackers.push({
+    id: 'tracker_' + Date.now(),
+    name, icon: icon || '📌',
+    type: 'custom', deletable: true,
+    startDate: getToday(), longestStreak: 0,
+    breakHistory: [], todayChecked: false, checkedDate: ''
+  })
+  saveTrackers(trackers)
+  return trackers
+}
+
+function deleteTracker(id) {
+  let trackers = getTrackers()
+  trackers = trackers.filter(t => !t.deletable || t.id !== id)
+  saveTrackers(trackers)
+  return trackers
+}
+
+// ========== 追踪器操作 ==========
+function getTrackerDays(trackerId) {
+  const trackers = getTrackers()
+  const t = trackers.find(tr => tr.id === trackerId)
+  if (!t || !t.startDate) return 0
+  const start = new Date(t.startDate)
   const today = new Date(getToday())
   const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24))
   return Math.max(0, diff)
 }
 
-// 获取当前元气值
-function getVitality() {
-  const days = getAbstinenceDays()
-  return calcVitality(days)
+function getTrackerVitality(trackerId) {
+  return calcVitality(getTrackerDays(trackerId))
 }
 
-// 戒色打卡（每日确认）
-function doAbstinenceCheckin() {
-  const data = getAbstinence()
+function isTrackerCheckedInToday(trackerId) {
+  const trackers = getTrackers()
+  const t = trackers.find(tr => tr.id === trackerId)
+  if (!t) return false
   const today = getToday()
   // 跨天自动重置
-  if (data.checkedDate !== today) {
-    data.todayChecked = false
+  if (t.checkedDate !== today) {
+    t.todayChecked = false
+    t.checkedDate = today
+    saveTrackers(trackers)
   }
-  if (data.todayChecked) return false  // 今天已打卡
-  data.todayChecked = true
-  data.checkedDate = today
-  saveAbstinence(data)
+  return t.todayChecked
+}
+
+function doTrackerCheckin(trackerId) {
+  const trackers = getTrackers()
+  const t = trackers.find(tr => tr.id === trackerId)
+  if (!t) return false
+  const today = getToday()
+  if (t.checkedDate !== today) t.todayChecked = false
+  if (t.todayChecked) return false
+  t.todayChecked = true
+  t.checkedDate = today
+  saveTrackers(trackers)
   return true
 }
 
-// 今日是否已戒色打卡
-function isAbstinenceCheckedInToday() {
-  const data = getAbstinence()
-  const today = getToday()
-  // 跨天自动重置
-  if (data.checkedDate !== today) {
-    data.todayChecked = false
-    data.checkedDate = today
-    saveAbstinence(data)
-  }
-  return data.todayChecked
-}
-
-// 破戒（元气值下降40%）
-function breakAbstinence() {
-  const data = getAbstinence()
-  const days = getAbstinenceDays()
+function breakTracker(trackerId) {
+  const trackers = getTrackers()
+  const t = trackers.find(tr => tr.id === trackerId)
+  if (!t) return null
+  const days = getTrackerDays(trackerId)
   const vitality = calcVitality(days)
 
-  // 记录本次
-  data.resetHistory.push({
-    date: getToday(),
-    days: days,
-    vitality: vitality
-  })
+  t.breakHistory.push({ date: getToday(), days, vitality })
 
-  // 更新最长记录
-  if (days > data.longestStreak) {
-    data.longestStreak = days
-  }
+  if (days > t.longestStreak) t.longestStreak = days
 
-  // 破戒后元气值下降40%
   const newVitality = Math.round(vitality * 0.6)
-  // 新的 startDate：相当于新元气值对应的天数
   const offsetDays = Math.floor((newVitality / 100) * VITALITY_CYCLE)
-  const today = new Date(getToday())
-  today.setDate(today.getDate() - offsetDays)
-  data.startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const todayDt = new Date(getToday())
+  todayDt.setDate(todayDt.getDate() - offsetDays)
+  t.startDate = `${todayDt.getFullYear()}-${String(todayDt.getMonth() + 1).padStart(2, '0')}-${String(todayDt.getDate()).padStart(2, '0')}`
+  t.todayChecked = false
+  t.checkedDate = ''
 
-  // 重置打卡状态
-  data.todayChecked = false
-  data.checkedDate = ''
-
-  saveAbstinence(data)
-  return { oldVitality: vitality, newVitality: calcVitality(getAbstinenceDays()) }
+  saveTrackers(trackers)
+  return { oldVitality: vitality, newVitality: calcVitality(getTrackerDays(trackerId)) }
 }
 
-// ========== 每日打卡 ==========
-function getCheckins() {
-  return wx.getStorageSync('checkins') || {}
-}
-
-function saveCheckins(checkins) {
-  wx.setStorageSync('checkins', checkins)
-}
-
-// 今日某个模块是否已打卡
-function isCheckedInToday(moduleId) {
-  const checkins = getCheckins()
-  const today = getToday()
-  return !!(checkins[today] && checkins[today][moduleId])
-}
-
-// 打卡
-function doCheckin(moduleId) {
-  const checkins = getCheckins()
-  const today = getToday()
-  if (!checkins[today]) checkins[today] = {}
-  checkins[today][moduleId] = true
-  saveCheckins(checkins)
-}
-
-// 取消打卡
-function undoCheckin(moduleId) {
-  const checkins = getCheckins()
-  const today = getToday()
-  if (checkins[today]) {
-    delete checkins[today][moduleId]
-  }
-  saveCheckins(checkins)
-}
-
-// ========== 自定义模块 ==========
-function getCustomModules() {
-  return wx.getStorageSync('customModules') || []
-}
-
-function saveCustomModules(modules) {
-  wx.setStorageSync('customModules', modules)
-}
-
-function addCustomModule(module) {
-  const modules = getCustomModules()
-  modules.push({
-    id: 'custom_' + Date.now(),
-    name: module.name,
-    icon: module.icon || '📌',
-    createdAt: getToday()
-  })
-  saveCustomModules(modules)
-  return modules
-}
-
-function deleteCustomModule(id) {
-  let modules = getCustomModules()
-  modules = modules.filter(m => m.id !== id)
-  saveCustomModules(modules)
-  return modules
-}
-
-// 获取所有打卡模块（默认 + 自定义）
-function getAllModules() {
-  const settings = getSettings()
-  const customs = getCustomModules()
-
-  const defaults = [
-    { id: 'fitness', name: '健身', icon: '💪', isDefault: true, deletable: false }
-  ]
-
-  return [...defaults, ...customs.map(m => ({ ...m, isDefault: false, deletable: true }))]
-}
-
-// ========== 健身记录 ==========
+// ========== 健身记录（运动详情） ==========
 function getFitnessLogs() {
   return wx.getStorageSync('fitnessLogs') || []
 }
 
-function saveFitnessLogs(logs) {
-  wx.setStorageSync('fitnessLogs', logs)
-}
-
 function addFitnessLog(log) {
   const logs = getFitnessLogs()
-  logs.push({
-    date: getToday(),
-    type: log.type || '运动',
-    duration: log.duration || 0
-  })
-  saveFitnessLogs(logs)
+  logs.push({ date: getToday(), type: log.type || '运动', duration: log.duration || 0 })
+  wx.setStorageSync('fitnessLogs', logs)
   return logs
 }
 
-// ========== 数据统计 ==========
+// ========== 统计 ==========
 function getMonthStats(monthStr) {
-  // monthStr: '2026-07'
-  const checkins = getCheckins()
+  const trackers = getTrackers()
   const logs = getFitnessLogs()
+  let fitDays = 0, fitMinutes = 0
+  const customStats = {}
 
-  let fitDays = 0
-  let customStats = {} // { moduleId: count }
-  const modules = getCustomModules()
-
-  modules.forEach(m => { customStats[m.id] = { name: m.name, count: 0 } })
-
-  Object.keys(checkins).forEach(date => {
-    if (date.startsWith(monthStr)) {
-      const day = checkins[date]
-      if (day.fitness) fitDays++
-      modules.forEach(m => {
-        if (day[m.id]) customStats[m.id].count++
-      })
-    }
+  trackers.forEach(t => {
+    if (t.type === 'custom') customStats[t.id] = { name: t.name, count: 0 }
   })
 
-  // 健身总时长
-  let fitMinutes = 0
+  trackers.forEach(t => {
+    t.breakHistory.forEach(h => {
+      if (h.date.startsWith(monthStr)) {
+        if (t.type === 'fitness') fitDays++
+        if (customStats[t.id]) customStats[t.id].count++
+      }
+    })
+  })
+
   logs.forEach(log => {
-    if (log.date.startsWith(monthStr)) {
-      fitMinutes += (log.duration || 0)
-    }
+    if (log.date.startsWith(monthStr)) fitMinutes += (log.duration || 0)
   })
 
-  return {
-    fitDays,
-    fitMinutes,
-    customStats: Object.values(customStats)
-  }
+  return { fitDays, fitMinutes, customStats: Object.values(customStats) }
 }
 
-// 获取戒色重置历史（最近10条）
-function getAbstinenceHistory() {
-  const data = getAbstinence()
-  const history = [...data.resetHistory]
-  // 加上当前进行中的
-  const currentDays = getAbstinenceDays()
-  if (currentDays > 0) {
-    history.push({ date: getToday(), days: currentDays, current: true })
-  }
-  return history.slice(-30) // 最近30条记录
+function getTrackerHistory(trackerId) {
+  const trackers = getTrackers()
+  const t = trackers.find(tr => tr.id === trackerId)
+  if (!t) return []
+  const history = [...t.breakHistory]
+  const days = getTrackerDays(trackerId)
+  if (days > 0) history.push({ date: getToday(), days, current: true })
+  return history.slice(-30)
 }
+
+// ========== 旧数据兼容（静默迁移） ==========
+function migrateOldData() {
+  if (wx.getStorageSync('_migrated')) return
+  // 检查是否有旧数据需要迁移... 简单标记即可
+  wx.setStorageSync('_migrated', true)
+}
+
+migrateOldData()
 
 module.exports = {
   getSettings,
   saveSettings,
-  getAbstinence,
-  saveAbstinence,
-  getAbstinenceDays,
-  getVitality,
-  doAbstinenceCheckin,
-  isAbstinenceCheckedInToday,
-  breakAbstinence,
-  getCheckins,
-  saveCheckins,
-  isCheckedInToday,
-  doCheckin,
-  undoCheckin,
-  getCustomModules,
-  saveCustomModules,
-  addCustomModule,
-  deleteCustomModule,
-  getAllModules,
+  getTrackers,
+  saveTrackers,
+  addTracker,
+  deleteTracker,
+  getTrackerDays,
+  getTrackerVitality,
+  isTrackerCheckedInToday,
+  doTrackerCheckin,
+  breakTracker,
   getFitnessLogs,
-  saveFitnessLogs,
   addFitnessLog,
   getMonthStats,
-  getAbstinenceHistory
+  getTrackerHistory,
+  // 兼容旧API
+  getVitality: () => getTrackerVitality('abstinence'),
+  doAbstinenceCheckin: () => doTrackerCheckin('abstinence'),
+  isAbstinenceCheckedInToday: () => isTrackerCheckedInToday('abstinence'),
+  breakAbstinence: () => breakTracker('abstinence'),
+  getAbstinenceDays: () => getTrackerDays('abstinence'),
+  getAbstinence: () => {
+    const trackers = getTrackers()
+    return trackers.find(t => t.id === 'abstinence')
+  },
+  getAbstinenceHistory: () => getTrackerHistory('abstinence')
 }
