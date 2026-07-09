@@ -55,8 +55,14 @@ Page({
     const abstinenceDays = storage.getAbstinenceDays()
     const vitality = storage.getVitality()
     const abstinence = storage.getAbstinence()
-    const abstinenceChecked = storage.isAbstinenceCheckedInToday()
+    let abstinenceChecked = storage.isAbstinenceCheckedInToday()
     const modules = storage.getAllModules()
+
+    // 自动打卡：开启后每天首次打开自动确认
+    if (settings.autoCheckin && !abstinenceChecked) {
+      storage.doAbstinenceCheckin()
+      abstinenceChecked = true
+    }
 
     const todayModules = modules.map(m => ({
       ...m,

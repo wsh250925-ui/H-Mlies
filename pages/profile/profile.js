@@ -45,12 +45,14 @@ Page({
   selectGender(e) {
     const gender = e.currentTarget.dataset.gender
     const config = defaultConfig[gender]
+    const oldSettings = storage.getSettings()
 
     const settings = {
       gender,
       abstinenceLabel: config.abstinenceLabel,
       themeColor: config.themeColor,
       themeLight: config.themeLight,
+      autoCheckin: oldSettings ? oldSettings.autoCheckin : false,
       createdAt: getToday()
     }
 
@@ -79,6 +81,19 @@ Page({
     setTimeout(() => {
       wx.switchTab({ url: '/pages/index/index' })
     }, 800)
+  },
+
+  // 切换自动打卡
+  toggleAutoCheckin(e) {
+    const settings = storage.getSettings()
+    if (!settings) return
+    settings.autoCheckin = e.detail.value
+    storage.saveSettings(settings)
+    this.loadData()
+    wx.showToast({
+      title: settings.autoCheckin ? '已开启自动打卡' : '已关闭自动打卡',
+      icon: 'none'
+    })
   },
 
   // ==== 自定义模块 ====

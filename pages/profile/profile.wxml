@@ -28,6 +28,18 @@
     </view>
   </view>
 
+  <!-- 戒色设置 -->
+  <view class="card" wx:if="{{settings.gender}}">
+    <view class="card-title">🛡️ 戒色设置</view>
+    <view class="setting-row">
+      <view>
+        <text class="setting-label">自动打卡</text>
+        <text class="setting-desc">每天打开小程序自动确认坚持</text>
+      </view>
+      <switch checked="{{settings.autoCheckin}}" bindchange="toggleAutoCheckin" color="#4A90D9" />
+    </view>
+  </view>
+
   <!-- 自定义模块管理 -->
   <view class="card">
     <view class="card-title flex-between">
