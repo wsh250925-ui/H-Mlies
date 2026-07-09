@@ -1,0 +1,196 @@
+/* 打卡页样式 */
+
+.page-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+.page-date {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 32rpx;
+}
+
+/* 打卡卡片 */
+.checkin-card {
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  border-radius: 20rpx;
+  background: #fff;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.04);
+  border-left: 6rpx solid #e0e0e0;
+  transition: all 0.3s;
+}
+.checkin-card.done {
+  border-left-color: var(--green);
+  background: #fafff8;
+}
+.checkin-icon {
+  font-size: 52rpx;
+  margin-right: 20rpx;
+}
+.checkin-name {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+.checkin-hint {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+.checkin-badge {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  white-space: nowrap;
+}
+.badge-done {
+  background: var(--green-light);
+  color: var(--green);
+}
+.badge-todo {
+  background: #f0f0f0;
+  color: #999;
+}
+
+/* 操作区 */
+.checkin-actions {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+.checked-time {
+  text-align: center;
+  font-size: 26rpx;
+  color: #999;
+}
+.btn-block {
+  width: 100%;
+}
+.btn-outline {
+  background: #fff;
+  color: var(--blue);
+  border: 2rpx solid var(--blue);
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-ghost {
+  background: transparent;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60rpx;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+  border: none;
+  margin: 0 auto;
+}
+
+/* 健身弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.modal-box {
+  width: 620rpx;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx 28rpx;
+  overflow-y: auto;
+}
+.form-group {
+  margin-bottom: 28rpx;
+}
+.form-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+  color: #333;
+}
+.type-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+.type-item {
+  padding: 12rpx 24rpx;
+  background: #f5f5f5;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+  color: #666;
+  transition: all 0.2s;
+}
+.type-item.active {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* 时长选择 */
+.duration-input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx 0;
+}
+.duration-btn {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #666;
+}
+.duration-value {
+  font-size: 64rpx;
+  font-weight: 700;
+  margin: 0 16rpx;
+  min-width: 100rpx;
+  text-align: center;
+}
+.duration-unit {
+  font-size: 28rpx;
+  color: #999;
+  margin-right: 16rpx;
+}
+.quick-durations {
+  display: flex;
+  gap: 12rpx;
+  justify-content: center;
+  margin-top: 16rpx;
+}
+.qd-item {
+  padding: 10rpx 22rpx;
+  background: #f5f5f5;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+.qd-item.active {
+  background: var(--blue-light);
+  color: var(--blue);
+  font-weight: 500;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 120rpx 0;
+}
+.empty-icon { font-size: 80rpx; display: block; margin-bottom: 24rpx; }
+.empty-text { font-size: 32rpx; color: #666; display: block; margin-bottom: 12rpx; }
+.empty-hint { font-size: 26rpx; color: #999; }

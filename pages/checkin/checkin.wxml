@@ -1,0 +1,101 @@
+<!-- 打卡页 -->
+<view class="container">
+  <view class="page-title">今日打卡</view>
+  <view class="page-date">{{todayText}}</view>
+
+  <!-- 打卡模块列表 -->
+  <view class="card checkin-card {{item.checked ? 'done' : ''}}"
+    wx:for="{{modules}}"
+    wx:key="id"
+  >
+    <view class="checkin-header flex-between">
+      <view class="flex-row">
+        <text class="checkin-icon">{{item.icon}}</text>
+        <view>
+          <view class="checkin-name">{{item.name}}</view>
+          <view class="checkin-hint" wx:if="{{item.id === 'fitness'}}">可记录运动详情</view>
+        </view>
+      </view>
+      <view class="checkin-badge {{item.checked ? 'badge-done' : 'badge-todo'}}">
+        {{item.checked ? '✅ 已打卡' : '待打卡'}}
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="checkin-actions" wx:if="{{!item.checked}}">
+      <!-- 健身模块：两种打卡方式 -->
+      <block wx:if="{{item.id === 'fitness'}}">
+        <button class="btn btn-primary btn-block" bindtap="quickCheckin" data-id="{{item.id}}">
+          快速打卡
+        </button>
+        <button class="btn btn-outline btn-block mt-16" bindtap="showFitnessDetail">
+          记录运动详情
+        </button>
+      </block>
+
+      <!-- 普通模块 -->
+      <button class="btn btn-primary btn-block" wx:else bindtap="doCheckin" data-id="{{item.id}}">
+        点击打卡
+      </button>
+    </view>
+
+    <!-- 已打卡：取消按钮 -->
+    <view class="checkin-actions" wx:else>
+      <view class="checked-time">打卡时间：{{item.checkinTime || '今天'}}</view>
+      <button class="btn btn-sm btn-ghost mt-16" bindtap="undoCheckin" data-id="{{item.id}}">
+        取消打卡
+      </button>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{modules.length === 0}}">
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">还没有打卡模块</text>
+    <text class="empty-hint">去「我的」页面添加自定义模块吧</text>
+  </view>
+</view>
+
+<!-- 健身详情弹窗 -->
+<view class="modal-mask" wx:if="{{showFitness}}">
+  <view class="modal-box">
+    <view class="modal-title">🏃 记录运动详情</view>
+
+    <!-- 运动类型 -->
+    <view class="form-group">
+      <view class="form-label">运动类型</view>
+      <view class="type-grid">
+        <view
+          class="type-item {{fitnessType === item ? 'active' : ''}}"
+          wx:for="{{exerciseTypes}}"
+          wx:key="*this"
+          bindtap="selectType"
+          data-type="{{item}}"
+        >{{item}}</view>
+      </view>
+    </view>
+
+    <!-- 运动时长 -->
+    <view class="form-group">
+      <view class="form-label">运动时长（分钟）</view>
+      <view class="duration-input">
+        <text class="duration-btn" bindtap="changeDuration" data-delta="-5">−5</text>
+        <text class="duration-value">{{fitnessDuration}}</text>
+        <text class="duration-unit">分钟</text>
+        <text class="duration-btn" bindtap="changeDuration" data-delta="5">+5</text>
+      </view>
+      <!-- 快捷选择 -->
+      <view class="quick-durations">
+        <text class="qd-item {{fitnessDuration === 15 ? 'active' : ''}}" bindtap="setDuration" data-d="15">15分钟</text>
+        <text class="qd-item {{fitnessDuration === 30 ? 'active' : ''}}" bindtap="setDuration" data-d="30">30分钟</text>
+        <text class="qd-item {{fitnessDuration === 45 ? 'active' : ''}}" bindtap="setDuration" data-d="45">45分钟</text>
+        <text class="qd-item {{fitnessDuration === 60 ? 'active' : ''}}" bindtap="setDuration" data-d="60">60分钟</text>
+      </view>
+    </view>
+
+    <view class="modal-btns">
+      <button class="btn btn-sm" bindtap="hideFitnessDetail">取消</button>
+      <button class="btn btn-sm btn-primary" bindtap="saveFitnessLog">确认打卡</button>
+    </view>
+  </view>
+</view>

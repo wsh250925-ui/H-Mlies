@@ -1,0 +1,63 @@
+<!-- 统计页 -->
+<view class="container">
+  <!-- 戒色统计卡片 -->
+  <view class="card stats-hero">
+    <view class="stats-hero-label">🏆 {{abstinenceLabel}}记录</view>
+    <view class="stats-hero-row">
+      <view class="stats-hero-item">
+        <text class="stats-hero-num">{{currentStreak}}</text>
+        <text class="stats-hero-sub">当前连续(天)</text>
+      </view>
+      <view class="stats-hero-divider"></view>
+      <view class="stats-hero-item">
+        <text class="stats-hero-num">{{longestStreak}}</text>
+        <text class="stats-hero-sub">历史最长(天)</text>
+      </view>
+      <view class="stats-hero-divider"></view>
+      <view class="stats-hero-item">
+        <text class="stats-hero-num">{{totalResets}}</text>
+        <text class="stats-hero-sub">累计重置(次)</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 戒色历史趋势图 -->
+  <view class="card">
+    <view class="card-title">📈 {{abstinenceLabel}}趋势</view>
+    <canvas
+      type="2d"
+      id="abstinenceChart"
+      class="chart-canvas"
+    ></canvas>
+    <view class="chart-empty" wx:if="{{chartData.length === 0}}">
+      数据不足，开始记录后这里会显示趋势图
+    </view>
+  </view>
+
+  <!-- 健身统计 -->
+  <view class="card">
+    <view class="card-title">💪 本月健身</view>
+    <view class="fit-stats">
+      <view class="fit-stat-item">
+        <text class="fit-stat-num">{{monthFitDays}}</text>
+        <text class="fit-stat-label">运动天数</text>
+      </view>
+      <view class="fit-stat-item">
+        <text class="fit-stat-num">{{monthFitMinutes}}</text>
+        <text class="fit-stat-label">运动分钟</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 自定义模块统计 -->
+  <view class="card" wx:if="{{customStats.length > 0}}">
+    <view class="card-title">📊 模块完成率（本月）</view>
+    <view class="custom-stat-item flex-between" wx:for="{{customStats}}" wx:key="name">
+      <text class="custom-stat-name">{{item.name}}</text>
+      <view class="custom-stat-bar-wrap">
+        <view class="custom-stat-bar" style="width: {{item.percent}}%"></view>
+      </view>
+      <text class="custom-stat-count">{{item.count}}天</text>
+    </view>
+  </view>
+</view>

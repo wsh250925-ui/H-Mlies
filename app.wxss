@@ -1,0 +1,107 @@
+/* 全局样式 */
+page {
+  --blue: #4A90D9;
+  --blue-light: #E8F2FC;
+  --purple: #9B7ED8;
+  --purple-light: #F2EDFA;
+  --green: #52C41A;
+  --green-light: #EFF9E8;
+  --red: #FF4D4F;
+  --orange: #FA8C16;
+  --gray: #999;
+  --gray-light: #f5f5f5;
+  --text: #333;
+  --text-light: #666;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 28rpx;
+  color: var(--text);
+  background-color: var(--gray-light);
+  box-sizing: border-box;
+}
+
+/* 通用容器 */
+.container {
+  padding: 24rpx;
+  min-height: 100vh;
+}
+
+/* 卡片样式 */
+.card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.04);
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16rpx;
+}
+
+/* 按钮 */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  border: none;
+  padding: 0 48rpx;
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+}
+
+.btn-danger {
+  background: #fff;
+  color: var(--red);
+  border: 2rpx solid var(--red);
+}
+
+.btn-sm {
+  height: 60rpx;
+  font-size: 26rpx;
+  padding: 0 28rpx;
+  border-radius: 30rpx;
+}
+
+/* 弹性布局 */
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 文字 */
+.text-center { text-align: center; }
+.text-gray { color: var(--gray); }
+.text-light { color: var(--text-light); }
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+
+/* 间距 */
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mt-32 { margin-top: 32rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-24 { margin-bottom: 24rpx; }

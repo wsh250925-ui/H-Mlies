@@ -1,0 +1,82 @@
+<!-- 首页 -->
+<view class="container">
+  <!-- 首次使用引导 -->
+  <view class="first-guide" wx:if="{{isFirstLaunch}}">
+    <view class="guide-card">
+      <view class="guide-icon">👋</view>
+      <view class="guide-title">欢迎使用自律打卡</view>
+      <view class="guide-desc">请先选择你的性别，<br/>我们将为你定制专属计划</view>
+      <button class="btn btn-primary" bindtap="goToProfile">去设置</button>
+    </view>
+  </view>
+
+  <!-- 正常页面 -->
+  <block wx:else>
+    <!-- 戒色计时器 -->
+    <view class="timer-card card" style="background: linear-gradient(135deg, {{themeColor}}, {{themeLight}});">
+      <view class="timer-label">{{abstinenceLabel}} · 已坚持</view>
+      <view class="timer-days">
+        <text class="timer-number">{{abstinenceDays}}</text>
+        <text class="timer-unit">天</text>
+      </view>
+      <view class="timer-info">
+        <text>从 {{startDateText}} 开始</text>
+      </view>
+      <view class="timer-info" wx:if="{{longestStreak > 0}}">
+        <text>🏆 最长记录：{{longestStreak}} 天</text>
+      </view>
+      <view class="timer-reset" bindtap="showResetModal">
+        <text>🔄 重置</text>
+      </view>
+    </view>
+
+    <!-- 今日状态卡片 -->
+    <view class="card">
+      <view class="card-title">今日打卡 · {{todayText}}</view>
+      <view class="module-list">
+        <view
+          class="module-item {{item.checked ? 'checked' : ''}}"
+          wx:for="{{modules}}"
+          wx:key="id"
+          bindtap="toggleCheckin"
+          data-id="{{item.id}}"
+          data-checked="{{item.checked}}"
+        >
+          <view class="module-icon">{{item.icon}}</view>
+          <view class="module-name">{{item.name}}</view>
+          <view class="module-status">
+            <text wx:if="{{item.checked}}" class="text-green">✅</text>
+            <text wx:else class="text-gray">⬜</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 无模块提示 -->
+      <view class="empty-hint" wx:if="{{modules.length === 0}}">
+        <text>暂无打卡模块，去</text>
+        <text class="link" bindtap="goToProfile">「我的」</text>
+        <text>添加吧</text>
+      </view>
+    </view>
+
+    <!-- 鼓励语 -->
+    <view class="encourage-card">
+      <text class="encourage-text">{{encouragement}}</text>
+    </view>
+  </block>
+</view>
+
+<!-- 重置确认弹窗 -->
+<view class="modal-mask" wx:if="{{showReset}}">
+  <view class="modal-box">
+    <view class="modal-title">确定要重置吗？</view>
+    <view class="modal-body">
+      你已经坚持了 <text class="text-red modal-highlight">{{abstinenceDays}} 天</text>，<br/>
+      下次可以更久！💪
+    </view>
+    <view class="modal-btns">
+      <button class="btn btn-sm" bindtap="hideResetModal">取消</button>
+      <button class="btn btn-sm btn-danger" bindtap="doReset">确认重置</button>
+    </view>
+  </view>
+</view>

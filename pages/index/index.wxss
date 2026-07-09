@@ -1,0 +1,150 @@
+/* 首页样式 */
+
+/* 首次引导 */
+.first-guide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+.guide-card {
+  text-align: center;
+  padding: 64rpx 48rpx;
+}
+.guide-icon { font-size: 96rpx; margin-bottom: 32rpx; }
+.guide-title { font-size: 40rpx; font-weight: 700; margin-bottom: 16rpx; }
+.guide-desc { font-size: 28rpx; color: #666; margin-bottom: 48rpx; line-height: 1.8; }
+
+/* 戒色计时卡片 */
+.timer-card {
+  text-align: center;
+  padding: 48rpx 32rpx 32rpx;
+  position: relative;
+  overflow: hidden;
+}
+.timer-label {
+  font-size: 28rpx;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 12rpx;
+}
+.timer-days {
+  margin: 16rpx 0;
+}
+.timer-number {
+  font-size: 120rpx;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 4rpx 8rpx rgba(0,0,0,0.1);
+}
+.timer-unit {
+  font-size: 40rpx;
+  color: #fff;
+  margin-left: 8rpx;
+}
+.timer-info {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.8);
+  margin-top: 8rpx;
+}
+.timer-reset {
+  margin-top: 32rpx;
+  padding: 12rpx 40rpx;
+  background: rgba(255,255,255,0.25);
+  border-radius: 30rpx;
+  display: inline-block;
+  font-size: 26rpx;
+  color: #fff;
+}
+
+/* 打卡模块列表 */
+.module-list {
+  margin-top: 8rpx;
+}
+.module-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 16rpx;
+  border-radius: 16rpx;
+  margin-bottom: 8rpx;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+.module-item.checked {
+  background: #f0faf0;
+}
+.module-icon {
+  font-size: 44rpx;
+  margin-right: 20rpx;
+}
+.module-name {
+  flex: 1;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+.module-status {
+  font-size: 36rpx;
+}
+
+/* 鼓励语 */
+.encourage-card {
+  text-align: center;
+  padding: 32rpx 24rpx;
+}
+.encourage-text {
+  font-size: 30rpx;
+  color: #666;
+  font-style: italic;
+}
+
+/* 空状态 */
+.empty-hint {
+  text-align: center;
+  padding: 48rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+.link {
+  color: var(--blue);
+}
+
+/* 弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.modal-box {
+  width: 580rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 48rpx 40rpx 32rpx;
+  text-align: center;
+}
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-bottom: 24rpx;
+}
+.modal-body {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 40rpx;
+}
+.modal-highlight {
+  font-size: 44rpx;
+  font-weight: 700;
+}
+.modal-btns {
+  display: flex;
+  gap: 24rpx;
+  justify-content: center;
+}
+.modal-btns .btn {
+  width: 200rpx;
+}
