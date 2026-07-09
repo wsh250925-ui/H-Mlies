@@ -18,6 +18,30 @@ const encouragements = [
 // 健身运动类型
 const exerciseTypes = ['跑步', '力量训练', '游泳', '骑行', '跳绳', '瑜伽', '篮球', '足球', '羽毛球', '散步', 'HIIT', '其他']
 
+// 轮播名言
+const quotes = [
+  { text: '自律的程度，决定你人生的高度。', author: '佚名' },
+  { text: '能控制自己的人，才能控制命运。', author: '柏拉图' },
+  { text: '每一次克制自己，都意味着比以前更强大。', author: '高尔基' },
+  { text: '征服自己的一切弱点，正是一个人伟大的开始。', author: '沈从文' },
+  { text: '身体是一切的本钱，没有健康，一切都是空谈。', author: '佚名' },
+  { text: '今天的汗水，是明天骄傲的资本。', author: '佚名' },
+  { text: '自律给我自由。', author: 'Keep' },
+  { text: '坚持不是一种选择，而是一种态度。', author: '佚名' },
+  { text: '只有流过血的手指，才能弹出世间的绝唱。', author: '泰戈尔' },
+  { text: '真正的自由，是在所有时候都能控制自己。', author: '蒙田' },
+  { text: '人最大的敌人是自己，战胜自己就是胜利。', author: '佚名' },
+  { text: '不积跬步，无以至千里；不积小流，无以成江海。', author: '荀子' },
+  { text: '运动是生命的源泉，一切乐境皆由运动而来。', author: '柏拉图' },
+  { text: '你所流下的每一滴汗，都在塑造更好的你。', author: '佚名' },
+  { text: '克己复礼为仁。一日克己复礼，天下归仁焉。', author: '孔子' },
+  { text: '自胜者强，强行者有志。', author: '老子' },
+  { text: '放弃只需一秒，坚持却要一辈子，而你选对了。', author: '佚名' },
+  { text: '你的身体记录着你所有的自律与放纵。', author: '佚名' },
+  { text: '天行健，君子以自强不息。', author: '周易' },
+  { text: '每一个不曾起舞的日子，都是对生命的辜负。', author: '尼采' },
+]
+
 // 自定义模块可选图标
 const moduleIcons = ['📖', '✍️', '🧘', '💧', '🍎', '😴', '🧹', '💻', '🎯', '🎨', '🎵', '🧠', '💰', '🚭', '🍺', '📱', '🌅', '💊']
 
@@ -64,6 +88,7 @@ function getWeekday() {
 
 module.exports = {
   encouragements,
+  quotes,
   exerciseTypes,
   moduleIcons,
   defaultConfig,

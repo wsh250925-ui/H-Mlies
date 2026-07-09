@@ -1,6 +1,6 @@
 // 首页
 const storage = require('../../utils/storage')
-const { getEncouragement, getToday, formatDate, getWeekday, defaultConfig } = require('../../utils/constants')
+const { getEncouragement, getToday, formatDate, getWeekday, defaultConfig, quotes } = require('../../utils/constants')
 
 Page({
   data: {
@@ -14,11 +14,18 @@ Page({
     todayText: '',
     showReset: false,
     themeColor: '#4A90D9',
-    themeLight: '#E8F2FC'
+    themeLight: '#E8F2FC',
+    // 名言轮播
+    quotes: quotes,
+    quoteText: '',
+    quoteAuthor: '',
+    currentQuote: 0,   // 当前显示的索引
+    _cursor: 0,         // 下一个要显示的
+    quoteFade: false,
+    _quoteTimer: null
   },
 
   onShow() {
-    const app = getApp()
     const settings = storage.getSettings()
 
     if (!settings) {
@@ -28,6 +35,47 @@ Page({
 
     this.setData({ isFirstLaunch: false })
     this.loadData(settings)
+    this.startQuoteRotation()
+  },
+
+  onHide() {
+    this.stopQuoteRotation()
+  },
+
+  // 名言轮播
+  startQuoteRotation() {
+    this.stopQuoteRotation()
+    // 立即显示当前名言
+    this.updateQuote()
+    // 每5秒切换
+    const timer = setInterval(() => {
+      this.updateQuote()
+    }, 5000)
+    this.setData({ _quoteTimer: timer })
+  },
+
+  stopQuoteRotation() {
+    const timer = this.data._quoteTimer
+    if (timer) {
+      clearInterval(timer)
+      this.setData({ _quoteTimer: null })
+    }
+  },
+
+  updateQuote() {
+    const cursor = this.data._cursor
+    const q = quotes[cursor]
+    this.setData({
+      quoteText: q.text,
+      quoteAuthor: q.author,
+      currentQuote: cursor,
+      _cursor: (cursor + 1) % quotes.length,
+      quoteFade: false
+    })
+    // 触发渐入动画
+    setTimeout(() => {
+      this.setData({ quoteFade: true })
+    }, 50)
   },
 
   loadData(settings) {

@@ -30,6 +30,16 @@
       </view>
     </view>
 
+    <!-- 名言轮播 -->
+    <view class="quote-card">
+      <view class="quote-icon">💬</view>
+      <view class="quote-text {{quoteFade ? 'fade-in' : ''}}">{{quoteText}}</view>
+      <view class="quote-author">—— {{quoteAuthor}}</view>
+      <view class="quote-dots">
+        <text class="dot {{index === currentQuote ? 'active' : ''}}" wx:for="{{quotes}}" wx:key="*this"></text>
+      </view>
+    </view>
+
     <!-- 今日状态卡片 -->
     <view class="card">
       <view class="card-title">今日打卡 · {{todayText}}</view>

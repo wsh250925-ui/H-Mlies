@@ -37,11 +37,20 @@
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
-    }
+    },
+    "compileWorklet": false,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "miniprogram",
   "libVersion": "3.7.0",
-  "appid": "wx0000000000000000",
+  "appid": "wx11350bec984ce0b6",
   "projectname": "self-discipline",
-  "condition": {}
+  "condition": {},
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
 }
