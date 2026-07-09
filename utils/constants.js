@@ -42,6 +42,35 @@ const quotes = [
   { text: '每一个不曾起舞的日子，都是对生命的辜负。', author: '尼采' },
 ]
 
+// 打卡成功夸奖语（随机抽取）
+const checkinPraises = [
+  '今天战胜了自己，你就是王者！👑',
+  '又坚持了一天，元气满满！⚡',
+  '对自己说：我很棒！💪',
+  '每一次打卡，都是对未来的投资 ✨',
+  '今天的自律，明天的自由 🕊️',
+  '坚持的你，在发光！🌟',
+  '又赢了一天，继续保持！🏆',
+  '你的意志力越来越强了 🔥',
+  '干净利落的一天，值得骄傲！💎',
+  '今天的克制，换来了更好的自己 🌿',
+]
+
+// 破戒提醒语（随机抽取）
+const breakWarnings = [
+  '身体最重要，好好休息再出发 💙',
+  '没关系，每一次跌倒都是成长 🌱',
+  '放纵伤身，爱惜自己才能走更远 ❤️',
+  '偶尔的失误不可怕，别再连续就好 🙏',
+  '元气受损了，这周多锻炼补回来吧 🏃',
+  '身体是革命的本钱，善待它 💆',
+  '给自己一点宽容，明天重新开始 🌅',
+  '注意休息，补充营养，恢复元气 🥗',
+]
+
+// 21天元气周期
+const VITALITY_CYCLE = 21
+
 // 自定义模块可选图标
 const moduleIcons = ['📖', '✍️', '🧘', '💧', '🍎', '😴', '🧹', '💻', '🎯', '🎨', '🎵', '🧠', '💰', '🚭', '🍺', '📱', '🌅', '💊']
 
@@ -86,14 +115,29 @@ function getWeekday() {
   return '星期' + days[new Date().getDay()]
 }
 
+// 计算元气值（0-100）
+function calcVitality(days) {
+  return Math.min(100, Math.round((days / VITALITY_CYCLE) * 100))
+}
+
+// 随机获取一条
+function randomPick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
 module.exports = {
   encouragements,
   quotes,
+  checkinPraises,
+  breakWarnings,
+  VITALITY_CYCLE,
   exerciseTypes,
   moduleIcons,
   defaultConfig,
   getEncouragement,
   getToday,
   formatDate,
-  getWeekday
+  getWeekday,
+  calcVitality,
+  randomPick
 }

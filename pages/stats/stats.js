@@ -6,6 +6,7 @@ Page({
   data: {
     abstinenceLabel: '戒色',
     currentStreak: 0,
+    currentVitality: 0,
     longestStreak: 0,
     totalResets: 0,
     monthFitDays: 0,
@@ -22,6 +23,7 @@ Page({
     const config = defaultConfig[gender] || defaultConfig.male
     const abstinence = storage.getAbstinence()
     const currentStreak = storage.getAbstinenceDays()
+    const currentVitality = storage.getVitality()
 
     // 本月统计
     const today = getToday()
@@ -44,6 +46,7 @@ Page({
     this.setData({
       abstinenceLabel: config.abstinenceLabel,
       currentStreak,
+      currentVitality,
       longestStreak: abstinence.longestStreak,
       totalResets: abstinence.resetHistory.length,
       monthFitDays: monthStats.fitDays,

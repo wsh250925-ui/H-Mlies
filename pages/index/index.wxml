@@ -12,21 +12,42 @@
 
   <!-- 正常页面 -->
   <block wx:else>
-    <!-- 戒色计时器 -->
-    <view class="timer-card card" style="background: linear-gradient(135deg, {{themeColor}}, {{themeLight}});">
-      <view class="timer-label">{{abstinenceLabel}} · 已坚持</view>
-      <view class="timer-days">
-        <text class="timer-number">{{abstinenceDays}}</text>
-        <text class="timer-unit">天</text>
+    <!-- 元气值卡片 -->
+    <view class="vitality-card card" style="background: linear-gradient(135deg, {{themeColor}}, {{themeLight}});">
+      <view class="vitality-label">{{abstinenceLabel}} · 元气值</view>
+      <view class="vitality-ring-wrap">
+        <view class="vitality-ring">
+          <view class="ring-bg"></view>
+          <view class="ring-inner">
+            <text class="vitality-number">{{vitality}}</text>
+            <text class="vitality-percent">%</text>
+          </view>
+        </view>
       </view>
-      <view class="timer-info">
+      <view class="vitality-sub">
+        <text>已坚持 {{abstinenceDays}} 天</text>
+      </view>
+      <view class="vitality-bar-wrap">
+        <view class="vitality-bar">
+          <view class="vitality-bar-fill" style="width: {{vitality}}%; background: #fff;"></view>
+        </view>
+        <text class="vitality-bar-label">21天满元气</text>
+      </view>
+      <view class="vitality-info">
         <text>从 {{startDateText}} 开始</text>
+        <text wx:if="{{longestStreak > 0}}"> · 🏆 最长 {{longestStreak}} 天</text>
       </view>
-      <view class="timer-info" wx:if="{{longestStreak > 0}}">
-        <text>🏆 最长记录：{{longestStreak}} 天</text>
-      </view>
-      <view class="timer-reset" bindtap="showResetModal">
-        <text>🔄 重置</text>
+
+      <!-- 打卡 + 破戒 按钮 -->
+      <view class="vitality-btns">
+        <view class="vitality-btn btn-checkin {{abstinenceChecked ? 'done' : ''}}" bindtap="doCheckinAbstinence">
+          <text class="vitality-btn-icon">{{abstinenceChecked ? '✅' : '📝'}}</text>
+          <text class="vitality-btn-text">{{abstinenceChecked ? '已打卡' : '打卡'}}</text>
+        </view>
+        <view class="vitality-btn btn-break" bindtap="showBreakModal">
+          <text class="vitality-btn-icon">⚠️</text>
+          <text class="vitality-btn-text">破戒</text>
+        </view>
       </view>
     </view>
 
@@ -76,17 +97,17 @@
   </block>
 </view>
 
-<!-- 重置确认弹窗 -->
-<view class="modal-mask" wx:if="{{showReset}}">
+<!-- 破戒确认弹窗 -->
+<view class="modal-mask" wx:if="{{showBreak}}">
   <view class="modal-box">
-    <view class="modal-title">确定要重置吗？</view>
+    <view class="modal-title">⚠️ 确认破戒</view>
     <view class="modal-body">
-      你已经坚持了 <text class="text-red modal-highlight">{{abstinenceDays}} 天</text>，<br/>
-      下次可以更久！💪
+      当前元气值 <text class="text-red modal-highlight">{{vitality}}%</text>，<br/>
+      破戒后将降至 <text class="text-red modal-highlight">{{breakVitality}}%</text>（-40%）
     </view>
     <view class="modal-btns">
-      <button class="btn btn-sm" bindtap="hideResetModal">取消</button>
-      <button class="btn btn-sm btn-danger" bindtap="doReset">确认重置</button>
+      <button class="btn btn-sm" bindtap="hideBreakModal">取消</button>
+      <button class="btn btn-sm btn-danger" bindtap="doBreak">确认破戒</button>
     </view>
   </view>
 </view>

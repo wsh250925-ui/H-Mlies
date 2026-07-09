@@ -1,5 +1,5 @@
 // 本地存储工具
-const { getToday } = require('./constants')
+const { getToday, calcVitality, VITALITY_CYCLE } = require('./constants')
 
 // ========== 设置 ==========
 function getSettings() {
@@ -17,9 +17,12 @@ function getAbstinence() {
     return {
       startDate: getToday(),
       longestStreak: 0,
-      resetHistory: []
+      resetHistory: [],
+      todayChecked: false   // 今天是否已打卡
     }
   }
+  // 兼容旧数据
+  if (data.todayChecked === undefined) data.todayChecked = false
   return data
 }
 
@@ -37,15 +40,51 @@ function getAbstinenceDays() {
   return Math.max(0, diff)
 }
 
-// 重置戒色计数器
-function resetAbstinence() {
+// 获取当前元气值
+function getVitality() {
+  const days = getAbstinenceDays()
+  return calcVitality(days)
+}
+
+// 戒色打卡（每日确认）
+function doAbstinenceCheckin() {
+  const data = getAbstinence()
+  const today = getToday()
+  // 跨天自动重置
+  if (data.checkedDate !== today) {
+    data.todayChecked = false
+  }
+  if (data.todayChecked) return false  // 今天已打卡
+  data.todayChecked = true
+  data.checkedDate = today
+  saveAbstinence(data)
+  return true
+}
+
+// 今日是否已戒色打卡
+function isAbstinenceCheckedInToday() {
+  const data = getAbstinence()
+  const today = getToday()
+  // 跨天自动重置
+  if (data.checkedDate !== today) {
+    data.todayChecked = false
+    data.checkedDate = today
+    saveAbstinence(data)
+  }
+  return data.todayChecked
+}
+
+// 破戒（元气值下降40%）
+function breakAbstinence() {
   const data = getAbstinence()
   const days = getAbstinenceDays()
+  const vitality = calcVitality(days)
 
   // 记录本次
   data.resetHistory.push({
     date: getToday(),
-    days: days
+    days: days,
+    vitality: vitality
   })
 
   // 更新最长记录
@@ -53,10 +92,20 @@ function resetAbstinence() {
     data.longestStreak = days
   }
 
-  // 重置开始日期
-  data.startDate = getToday()
+  // 破戒后元气值下降40%
+  const newVitality = Math.round(vitality * 0.6)
+  // 新的 startDate：相当于新元气值对应的天数
+  const offsetDays = Math.floor((newVitality / 100) * VITALITY_CYCLE)
+  const today = new Date(getToday())
+  today.setDate(today.getDate() - offsetDays)
+  data.startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+  // 重置打卡状态
+  data.todayChecked = false
+  data.checkedDate = ''
+
   saveAbstinence(data)
-  return data
+  return { oldVitality: vitality, newVitality: calcVitality(getAbstinenceDays()) }
 }
 
 // ========== 每日打卡 ==========
@@ -209,7 +258,10 @@ module.exports = {
   getAbstinence,
   saveAbstinence,
   getAbstinenceDays,
-  resetAbstinence,
+  getVitality,
+  doAbstinenceCheckin,
+  isAbstinenceCheckedInToday,
+  breakAbstinence,
   getCheckins,
   saveCheckins,
   isCheckedInToday,
